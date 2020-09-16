@@ -1,0 +1,246 @@
+from PPlay.sprite import Sprite
+from PPlay.animation import Animation
+from PPlay.collision import Collision
+import globais
+from tela import Tela
+
+class Posicoes(object):
+    def __init__(self, window):
+        self.window = window
+        self.tela = Tela(window)
+        self.collision = Collision()
+        self.setParadoD()
+        self.personagem = self.parado_d
+        self.setPosicaoInicial()
+        self.kunai_d = []
+        self.kunai_e = []
+        globais.POS_Y = (globais.HEIGHT - globais.HEIGHT_S - self.personagem.height - 72)
+
+    def setPosicaoInicial(self):
+        self.personagem.set_position(globais.POS_X, globais.POS_Y)
+        self.personagem.draw()
+
+    def setParadoD(self):
+        self.parado_d = Sprite("img/parado_d2.png")
+        self.personagem = self.parado_d
+
+    def setParadoE(self):
+        self.parado_e = Sprite("img/parado_e2.png")
+        self.personagem = self.parado_e
+
+    def setAndandoD(self):
+        self.andando_d = Animation("img/personagem_d2.png", 5, loop = True)
+        self.andando_d.set_sequence_time(0, 5, 300, loop = True)
+        self.personagem = self.andando_d
+
+    def setAndandoE(self):
+        self.andando_e = Animation("img/personagem_e2.png", 5, loop = True)
+        self.andando_e.set_sequence_time(0, 5, 300, loop = True)
+        self.personagem = self.andando_e
+
+    def setPuloD(self):
+        self.pulo_d = Animation("img/pulo_d2.png", 4, loop = True)
+        self.pulo_d.set_sequence_time(0, 4, 500, loop = True)
+        self.personagem = self.pulo_d
+
+    def setPuloE(self):
+        self.pulo_e = Animation("img/pulo_e2.png", 4, loop = True)
+        self.pulo_e.set_sequence_time(0, 4, 500, loop = True)
+        self.personagem = self.pulo_e
+
+    def setAtaqueD(self):
+        self.ataque_d = Animation("img/ataque_d2.png", 7, loop = True)
+        self.ataque_d.set_sequence_time(0, 7, 500, loop = True)
+        self.personagem = self.ataque_d
+
+    def setAtaqueE(self):
+        self.ataque_e = Animation("img/ataque_e2.png", 7, loop = True)
+        self.ataque_e.set_sequence_time(0, 7, 700, loop = True)
+        self.personagem = self.ataque_e
+
+    def setAbaixadoD(self):
+        self.abaixado_d = Sprite("img/abaixado_d.png")
+        self.personagem = self.abaixado_d
+
+    def setAbaixadoE(self):
+        self.abaixado_e = Sprite("img/abaixado_e.png")
+        self.personagem = self.abaixado_e
+
+    def setKunaiD(self):
+        self.personagem_kunai_d = Animation("img/kunai_d2.png", 3, loop = True)
+        self.personagem_kunai_d.set_sequence_time(0, 3, 300, loop = True)
+        self.personagem = self.personagem_kunai_d
+
+    def setKunaiE(self):
+        self.personagem_kunai_e = Animation("img/kunai_e2.png", 3, loop = True)
+        self.personagem_kunai_e.set_sequence_time(0, 3, 300, loop = True)
+        self.personagem = self.personagem_kunai_e
+
+    def setPosicao(self):
+        self.personagem.set_position(globais.POS_X, globais.POS_Y)
+        self.personagem.draw()
+
+    def personagemUpdate(self):
+        if(globais.STATUS_PERSONAGEM == 0):
+            self.setParadoD()
+            self.setPosicao()
+            globais.ESTADO_ANTERIOR = 0
+        elif(globais.STATUS_PERSONAGEM == 1):
+            self.setParadoE()
+            self.setPosicao()
+            globais.ESTADO_ANTERIOR = 1
+        elif(globais.STATUS_PERSONAGEM == 2):
+            self.setAndandoD()
+            globais.ESTADO_ANTERIOR = 0
+            while(True):
+                self.personagem.update()
+                self.setPosicao()
+                globais.POS_X += globais.VEL_PERSONAGEM*self.window.delta_time()
+                self.window.update()
+                if(self.personagem.get_curr_frame() == (self.personagem.get_final_frame()-1)):
+                    globais.STATUS_PERSONAGEM = 0
+                    break
+        elif(globais.STATUS_PERSONAGEM == 3):
+            self.setAndandoE()
+            globais.ESTADO_ANTERIOR = 1
+            while(True):
+                self.personagem.update()
+                self.setPosicao()
+                globais.POS_X -= globais.VEL_PERSONAGEM*self.window.delta_time()
+                self.personagem.draw()
+                self.window.update()
+                if(self.personagem.get_curr_frame() == (self.personagem.get_final_frame()-1)):
+                    globais.STATUS_PERSONAGEM = 1
+                    break
+        elif(globais.STATUS_PERSONAGEM == 4):
+            self.setPuloD()
+            globais.ESTADO_ANTERIOR = 0
+            contador = 200
+            altura = globais.HEIGHT - (3*self.parado_d.height)
+            while(True):
+                self.setPosicao()
+                self.personagem.update()
+                while(globais.POS_Y > altura):
+                    self.personagem.set_curr_frame(0)
+                    globais.POS_Y -= globais.PULO_PERSONAGEM * self.window.delta_time()
+                    self.setPosicao()
+                    self.window.update()
+                while(contador*self.window.delta_time() > 0):
+                    self.personagem.set_curr_frame(1)
+                    self.setPosicao()
+                    self.window.update()
+                    contador -= 1
+                while(globais.POS_Y < globais.HEIGHT - globais.HEIGHT_S - self.personagem.height):
+                    self.personagem.set_curr_frame(2)
+                    globais.POS_Y += globais.PULO_PERSONAGEM * self.window.delta_time()
+                    self.setPosicao()
+                    self.window.update()
+                self.personagem.update()
+                if(self.personagem.get_curr_frame() == (self.personagem.get_final_frame()-1)):
+                    globais.STATUS_PERSONAGEM = 0
+                    break
+        elif(globais.STATUS_PERSONAGEM == 5): 
+            self.setPuloE()
+            globais.ESTADO_ANTERIOR = 1
+            contador = 200
+            altura = globais.HEIGHT - (3*self.parado_d.height)
+            while(True):
+                self.setPosicao()
+                self.personagem.update()
+                while(globais.POS_Y > altura):
+                    self.personagem.set_curr_frame(0)
+                    globais.POS_Y -= globais.PULO_PERSONAGEM * self.window.delta_time()
+                    self.setPosicao()
+                    self.window.update()
+                while(contador*self.window.delta_time() > 0):
+                    self.personagem.set_curr_frame(1)
+                    self.setPosicao()
+                    self.window.update()
+                    contador -= 1
+                while(globais.POS_Y < globais.HEIGHT - globais.HEIGHT_S - self.personagem.height):
+                    self.personagem.set_curr_frame(2)
+                    globais.POS_Y += globais.PULO_PERSONAGEM * self.window.delta_time()
+                    self.setPosicao()
+                    self.window.update()
+                self.personagem.update()
+                if(self.personagem.get_curr_frame() == (self.personagem.get_final_frame()-1)):
+                    globais.STATUS_PERSONAGEM = 1
+                    break
+        elif(globais.STATUS_PERSONAGEM == 6):            
+            self.setAtaqueD()
+            globais.ESTADO_ANTERIOR = 0
+            while(True):
+                self.personagem.update()
+                self.setPosicao()
+                self.personagem.draw()
+                self.window.update()
+                if(self.personagem.get_curr_frame() == (self.personagem.get_final_frame()-1)):
+                    globais.STATUS_PERSONAGEM = 0
+                    break
+        elif(globais.STATUS_PERSONAGEM == 7):    
+            self.setAtaqueE()
+            globais.ESTADO_ANTERIOR = 1
+            while(True):
+                self.personagem.update()
+                self.setPosicao()
+                self.personagem.draw()
+                self.window.update()
+                if(self.personagem.get_curr_frame() == (self.personagem.get_final_frame()-1)):
+                    globais.STATUS_PERSONAGEM = 1
+                    break
+        elif(globais.STATUS_PERSONAGEM == 8):    
+            self.setAbaixadoD()
+            globais.POS_Y = globais.POS_Y - self.personagem.height
+            self.setPosicao()
+            globais.ESTADO_ANTERIOR = 0
+        elif(globais.STATUS_PERSONAGEM == 9):    
+            self.setAbaixadoE()
+            self.setPosicao()
+            globais.ESTADO_ANTERIOR = 1
+        elif(globais.STATUS_PERSONAGEM == 10):    
+            self.setKunaiD()
+            globais.ESTADO_ANTERIOR = 0
+            while(True):
+                self.personagem.update()
+                self.setPosicao()
+                self.personagem.draw()
+                self.window.update()
+                if(self.personagem.get_curr_frame() == (self.personagem.get_final_frame()-1)):
+                    globais.STATUS_PERSONAGEM = 0
+                    break
+        elif(globais.STATUS_PERSONAGEM == 11):    
+            self.setKunaiE()
+            globais.ESTADO_ANTERIOR = 1
+            while(True):
+                self.personagem.update()
+                self.setPosicao()
+                self.personagem.draw()
+                self.window.update()
+                if(self.personagem.get_curr_frame() == (self.personagem.get_final_frame()-1)):
+                    globais.STATUS_PERSONAGEM = 1
+                    break
+
+    def kunaiD(self, inicial_x, inicial_y):
+        self.kunai_d_u = Sprite("img/kunai.png")
+        self.kunai_d_u.set_position(inicial_x, inicial_y)  
+        self.kunai_d.append(self.kunai_d_u)
+    
+    def kunaiE(self, inicial_x, inicial_y):
+        self.kunai_e_u = Sprite("img/kunaiE.png")
+        self.kunai_e_u.set_position(inicial_x, inicial_y)  
+        self.kunai_e.append(self.kunai_e_u)
+
+    def jogarKunaiD(self):
+        if len(kunai_d) > 10:
+            if (len(kunai_d) > 0):
+                kunai_d = []
+
+        for i in range(len(kunai_d)):
+            kunai_d[i].x += globais.VEL_KUNAI * self.window.delta_time()
+            kunai_d[i].draw()
+
+
+    def setGravidade(self):
+        if(globais.POS_Y < self.window.height):
+            if((self.collision.collided(self.personagem, self.tela.getSolo())) == False):
+                globais.POS_Y += globais.GRAVIDADE * self.window.delta_time()
